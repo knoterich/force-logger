@@ -13,19 +13,20 @@ def clientThread(client_id, conn, client_ip, port):
             # print(data)
         except:
             if not variables.queues_send[client_id].empty():
-                send_data = variables.queues_send[client_id].get()
+                send_data = variables.queues_send[client_id].get() + "\n"
                 variables.queues_send[client_id].task_done()
                 conn.sendall(send_data.encode())
             continue
 
-        try:
-            seperate = data.index("#")
-        except ValueError:
-            continue
+        while 42:
+            try:
+                seperate = data.index("#")
+            except ValueError:
+                break
 
-        msg = data[:seperate]
-        data = data[seperate+1:]
-        variables.queues_recv[client_id].put(msg)
+            msg = data[:seperate]
+            data = data[seperate+1:]
+            variables.queues_recv[client_id].put(msg)
 
     conn.close()
     print("connection closed")
@@ -35,6 +36,7 @@ def clientThread(client_id, conn, client_ip, port):
     variables.queues_recv[client_id].join()
     variables.queues_send[client_id] = queue.Queue()
     variables.list_scale_mom[client_id] = "NA"
+    variables.list_scale_status[client_id] = variables.STATUS_NEW
     variables.list_scale_id[client_id] = False
 
 
